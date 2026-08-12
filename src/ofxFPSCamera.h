@@ -61,6 +61,7 @@ class ofxFPSCamera : public ofCamera {
     
     void setCamHeight(float ch);
     float camHeight;
+    bool flyMode;
     
     void setMinMaxY(float angleDown, float angleUp);
     float totUpDown;

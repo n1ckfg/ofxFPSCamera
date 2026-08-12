@@ -40,9 +40,9 @@ void ofApp::draw(){
     ofSetColor(100);
     int step = 20;
     for (int i = 0; i < step; i++) {
-        ofLine(i*ofGetWidth()/step, -50, -ofGetWidth(), i*ofGetWidth()/step, -50, ofGetWidth());
-        ofLine(0, -50, i*ofGetWidth()/step, ofGetWidth(), -50, i*ofGetWidth()/step);
-        ofLine(0, -50, -i*ofGetWidth()/step, ofGetWidth(), -50, -i*ofGetWidth()/step);
+        ofDrawLine(i*ofGetWidth()/step, -50, -ofGetWidth(), i*ofGetWidth()/step, -50, ofGetWidth());
+        ofDrawLine(0, -50, i*ofGetWidth()/step, ofGetWidth(), -50, i*ofGetWidth()/step);
+        ofDrawLine(0, -50, -i*ofGetWidth()/step, ofGetWidth(), -50, -i*ofGetWidth()/step);
     }
     
     ofSetColor(255);
@@ -56,12 +56,17 @@ void ofApp::draw(){
     
     
 	ofSetColor(255);
-	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\nq/e: move down/up\nshift: run\n\nspace bar: reset camera to (0,0,0)\nt: toggle movement ease-in\nf: toggle full-screen\nsee ofApp.cpp for available methods and vars", ofPoint(30, 30));
+	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\nq/e: move down/up\nshift: run\n\nspace bar: reset camera to (0,0,0)\nt: toggle movement ease-in\nz: toggle fly mode\nf: toggle full-screen\nsee ofApp.cpp for available methods and vars", ofPoint(30, 30));
     
     if (camera.easeIn) {
         ofDrawBitmapString("easing is ON", ofPoint(30, ofGetHeight()-30));
     } else {
         ofDrawBitmapString("easing is OFF", ofPoint(30, ofGetHeight()-30));
+    }
+    if (camera.flyMode) {
+        ofDrawBitmapString("fly mode is ON", ofPoint(30, ofGetHeight()-15));
+    } else {
+        ofDrawBitmapString("fly mode is OFF", ofPoint(30, ofGetHeight()-15));
     }
 }
 
@@ -80,6 +85,10 @@ void ofApp::keyPressed(int key){
             
         case 't':
             camera.easeIn = !camera.easeIn;
+            break;
+            
+        case 'z':
+            camera.flyMode = !camera.flyMode;
             break;
             
         default:

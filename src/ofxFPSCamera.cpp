@@ -57,6 +57,7 @@ ofxFPSCamera::ofxFPSCamera() {
     eventsRegistered = false;
     
     camHeight = 0.0;
+    flyMode = false;
     totUpDown = 0.0;
     
     upAngle = -30.0;  // must be negative
@@ -144,8 +145,12 @@ void ofxFPSCamera::update(ofEventArgs& args){
                 dolly(-currentSpeed);
             }
             ofVec3f curPos(getPosition());                                      //Constant camera height
-            curPos.y = camHeight;                                               //
-            setPosition(curPos);                                                //
+            if(!flyMode) {                                                      //
+                curPos.y = camHeight;                                           //
+                setPosition(curPos);                                            //
+            } else {                                                            //
+                camHeight = curPos.y;                                           //
+            }                                                                   //
 			positionChanged = true;
 		}
 		
@@ -158,8 +163,12 @@ void ofxFPSCamera::update(ofEventArgs& args){
                 dolly(currentSpeed);
             }
             ofVec3f curPos(getPosition());                                      //Constant camera height
-            curPos.y = camHeight;                                               //
-            setPosition(curPos);                                                //
+            if(!flyMode) {                                                      //
+                curPos.y = camHeight;                                           //
+                setPosition(curPos);                                            //
+            } else {                                                            //
+                camHeight = curPos.y;                                           //
+            }                                                                   //
 			positionChanged = true;
 		}
 		
@@ -628,7 +637,7 @@ void ofxFPSCamera::saveCameraPosition()
 
 	savePosition.popTag(); //camera;
 
-	savePosition.saveFile(cameraPositionFile);
+	savePosition.save(cameraPositionFile);
 	
 	unsavedChanges = false;
 }
@@ -637,7 +646,7 @@ void ofxFPSCamera::loadCameraPosition()
 {
 	ofxXmlSettings loadPosition;
 	cout << "Camera pos " << cameraPositionFile << endl;
-	if(loadPosition.loadFile(cameraPositionFile)){
+	if(loadPosition.load(cameraPositionFile)){
 //		reset();
 //		loadPosition.pushTag("camera");
 		cout << "loaded camera pos" << endl;
