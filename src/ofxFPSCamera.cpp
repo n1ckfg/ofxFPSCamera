@@ -72,6 +72,8 @@ ofxFPSCamera::ofxFPSCamera() {
     back = false;
     left = false;
     rigt = false;
+    moveUp = false;
+    moveDown = false;
     strafe = true;
     
     clipPos = ofVec3f(0,0,0);
@@ -176,6 +178,34 @@ void ofxFPSCamera::update(ofEventArgs& args){
             } else {
                 truck(speed);
             }
+			positionChanged = true;
+		}
+		
+		if(moveUp){
+            if (easeIn) {
+                camHeight += speedMod;
+                speedMod+=accel;
+                if (speedMod>speed) {speedMod=speed;}
+            } else {
+                camHeight += speed;
+            }
+            ofVec3f curPos(getPosition());
+            curPos.y = camHeight;
+            setPosition(curPos);
+			positionChanged = true;
+		}
+		
+		if(moveDown){
+            if (easeIn) {
+                camHeight -= speedMod;
+                speedMod+=accel;
+                if (speedMod>speed) {speedMod=speed;}
+            } else {
+                camHeight -= speed;
+            }
+            ofVec3f curPos(getPosition());
+            curPos.y = camHeight;
+            setPosition(curPos);
 			positionChanged = true;
 		}
         
@@ -294,6 +324,8 @@ void ofxFPSCamera::keyPressed(ofKeyEventArgs& args){
     bool isA = (args.key == 'a' || args.key == 'A');
     bool isS = (args.key == 's' || args.key == 'S');
     bool isD = (args.key == 'd' || args.key == 'D');
+    bool isQ = (args.key == 'q' || args.key == 'Q');
+    bool isE = (args.key == 'e' || args.key == 'E');
 
     if ((isW && !useArrowKeys) || (args.key == OF_KEY_UP && useArrowKeys)) {
         forw = true;
@@ -307,8 +339,14 @@ void ofxFPSCamera::keyPressed(ofKeyEventArgs& args){
     if ((isD && !useArrowKeys) || (args.key == OF_KEY_RIGHT && useArrowKeys)) {
         rigt = true;
     }
+    if (isE) {
+        moveUp = true;
+    }
+    if (isQ) {
+        moveDown = true;
+    }
     
-    if (forw || back || left || rigt) {
+    if (forw || back || left || rigt || moveUp || moveDown) {
         movKey = true;
     }
 }
@@ -318,6 +356,8 @@ void ofxFPSCamera::keyReleased(ofKeyEventArgs& args){
     bool isA = (args.key == 'a' || args.key == 'A');
     bool isS = (args.key == 's' || args.key == 'S');
     bool isD = (args.key == 'd' || args.key == 'D');
+    bool isQ = (args.key == 'q' || args.key == 'Q');
+    bool isE = (args.key == 'e' || args.key == 'E');
 
     if ((isW && !useArrowKeys) || (args.key == OF_KEY_UP && useArrowKeys)) {
         forw = false;
@@ -331,8 +371,14 @@ void ofxFPSCamera::keyReleased(ofKeyEventArgs& args){
     if ((isD && !useArrowKeys) || (args.key == OF_KEY_RIGHT && useArrowKeys)) {
         rigt = false;
     }
+    if (isE) {
+        moveUp = false;
+    }
+    if (isQ) {
+        moveDown = false;
+    }
     
-    if (forw || back || left || rigt) {
+    if (forw || back || left || rigt || moveUp || moveDown) {
         movKey = true;
     } else {
         movKey = false;

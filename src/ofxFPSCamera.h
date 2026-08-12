@@ -112,5 +112,7 @@ protected:
     bool back;
     bool left;
     bool rigt;
+    bool moveUp;
+    bool moveDown;
 	
 };
