@@ -41,6 +41,7 @@ ofxFPSCamera::ofxFPSCamera() {
 	sensitivityY = 0.10f;
 
 	speed = 8.0f;
+	runSpeed = 2.0f;
 	
 	lastMouse = ofVec2f(0,0);
     
@@ -74,6 +75,7 @@ ofxFPSCamera::ofxFPSCamera() {
     rigt = false;
     moveUp = false;
     moveDown = false;
+    isRunning = false;
     strafe = true;
     
     clipPos = ofVec3f(0,0,0);
@@ -131,13 +133,15 @@ void ofxFPSCamera::update(ofEventArgs& args){
 	}
 
 	if(applyTranslation){
+        float currentSpeed = isRunning ? (speed * runSpeed) : speed;
+        
 		if(forw){
 			if (easeIn) {
                 dolly(-speedMod);
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                dolly(-speed);
+                dolly(-currentSpeed);
             }
             ofVec3f curPos(getPosition());                                      //Constant camera height
             curPos.y = camHeight;                                               //
@@ -149,9 +153,9 @@ void ofxFPSCamera::update(ofEventArgs& args){
             if (easeIn) {
                 dolly(speedMod);
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                dolly(speed);
+                dolly(currentSpeed);
             }
             ofVec3f curPos(getPosition());                                      //Constant camera height
             curPos.y = camHeight;                                               //
@@ -163,9 +167,9 @@ void ofxFPSCamera::update(ofEventArgs& args){
             if (easeIn) {
                 truck(-speedMod);
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                truck(-speed);
+                truck(-currentSpeed);
             }
 			positionChanged = true;
 		}
@@ -174,9 +178,9 @@ void ofxFPSCamera::update(ofEventArgs& args){
             if (easeIn) {
                 truck(speedMod);
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                truck(speed);
+                truck(currentSpeed);
             }
 			positionChanged = true;
 		}
@@ -185,9 +189,9 @@ void ofxFPSCamera::update(ofEventArgs& args){
             if (easeIn) {
                 camHeight += speedMod;
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                camHeight += speed;
+                camHeight += currentSpeed;
             }
             ofVec3f curPos(getPosition());
             curPos.y = camHeight;
@@ -199,9 +203,9 @@ void ofxFPSCamera::update(ofEventArgs& args){
             if (easeIn) {
                 camHeight -= speedMod;
                 speedMod+=accel;
-                if (speedMod>speed) {speedMod=speed;}
+                if (speedMod>currentSpeed) {speedMod=currentSpeed;}
             } else {
-                camHeight -= speed;
+                camHeight -= currentSpeed;
             }
             ofVec3f curPos(getPosition());
             curPos.y = camHeight;
@@ -345,6 +349,9 @@ void ofxFPSCamera::keyPressed(ofKeyEventArgs& args){
     if (isQ) {
         moveDown = true;
     }
+    if (args.key == OF_KEY_SHIFT || args.key == OF_KEY_LEFT_SHIFT || args.key == OF_KEY_RIGHT_SHIFT) {
+        isRunning = true;
+    }
     
     if (forw || back || left || rigt || moveUp || moveDown) {
         movKey = true;
@@ -376,6 +383,9 @@ void ofxFPSCamera::keyReleased(ofKeyEventArgs& args){
     }
     if (isQ) {
         moveDown = false;
+    }
+    if (args.key == OF_KEY_SHIFT || args.key == OF_KEY_LEFT_SHIFT || args.key == OF_KEY_RIGHT_SHIFT) {
+        isRunning = false;
     }
     
     if (forw || back || left || rigt || moveUp || moveDown) {

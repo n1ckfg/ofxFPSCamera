@@ -30,6 +30,7 @@ class ofxFPSCamera : public ofCamera {
 	float sensitivityX;
 	float sensitivityY;
 	float speed;
+	float runSpeed;
 	
 	//enable, disable
 	bool usemouse;
@@ -114,5 +115,6 @@ protected:
     bool rigt;
     bool moveUp;
     bool moveDown;
+    bool isRunning;
 	
 };

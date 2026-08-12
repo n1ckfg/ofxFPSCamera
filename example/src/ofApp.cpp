@@ -115,7 +115,7 @@ void ofApp::draw(){
     
     
 	ofSetColor(255);
-	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\nq/e: move down/up\n\nspace bar: reset camera to (0,0,0)\nt: toggle movement ease-in\nf: toggle full-screen\nsee ofApp.cpp for available methods and vars", ofPoint(30, 30));
+	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\nq/e: move down/up\nshift: run\n\nspace bar: reset camera to (0,0,0)\nt: toggle movement ease-in\nf: toggle full-screen\nsee ofApp.cpp for available methods and vars", ofPoint(30, 30));
     
     if (camera.easeIn) {
         ofDrawBitmapString("easing is ON", ofPoint(30, ofGetHeight()-30));
