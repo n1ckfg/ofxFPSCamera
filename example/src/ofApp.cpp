@@ -1,7 +1,7 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 //--------------------------------------------------------------
-void testApp::setup(){
+void ofApp::setup(){
     ofSetVerticalSync(true);
 	ofSetFrameRate(60);
 	
@@ -86,11 +86,11 @@ void testApp::setup(){
 }
 
 //--------------------------------------------------------------
-void testApp::update(){
+void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void testApp::draw(){
+void ofApp::draw(){
 	ofBackground(0);
 	
 	camera.begin();
@@ -115,7 +115,7 @@ void testApp::draw(){
     
     
 	ofSetColor(255);
-	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\n\nspace bar: reset camera to (0,0,0)\ne: toggle movement ease-in\nf: toggle full-screen\nsee testApp.cpp for available methods and vars", ofPoint(30, 30));
+	ofDrawBitmapString("use mouse to look around\nw: forward\ns: backwards\na: strafe left\nd: strafe right\n\nspace bar: reset camera to (0,0,0)\ne: toggle movement ease-in\nf: toggle full-screen\nsee ofApp.cpp for available methods and vars", ofPoint(30, 30));
     
     if (camera.easeIn) {
         ofDrawBitmapString("easing is ON", ofPoint(30, ofGetHeight()-30));
@@ -125,7 +125,7 @@ void testApp::draw(){
 }
 
 //--------------------------------------------------------------
-void testApp::keyPressed(int key){
+void ofApp::keyPressed(int key){
     switch (key) {
         case ' ':
             camera.setPosition(0, 0, 0);
@@ -146,31 +146,31 @@ void testApp::keyPressed(int key){
 }
 
 //--------------------------------------------------------------
-void testApp::keyReleased(int key){
+void ofApp::keyReleased(int key){
 
 }
 
 //--------------------------------------------------------------
-void testApp::mouseMoved(int x, int y ){
+void ofApp::mouseMoved(int x, int y ){
 
 }
 
 //--------------------------------------------------------------
-void testApp::mouseDragged(int x, int y, int button){
+void ofApp::mouseDragged(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void testApp::mousePressed(int x, int y, int button){
+void ofApp::mousePressed(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void testApp::mouseReleased(int x, int y, int button){
+void ofApp::mouseReleased(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void testApp::windowResized(int w, int h){
+void ofApp::windowResized(int w, int h){
 
 }

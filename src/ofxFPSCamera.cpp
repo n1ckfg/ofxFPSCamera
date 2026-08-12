@@ -228,7 +228,8 @@ void ofxFPSCamera::update(ofEventArgs& args){
     /***********************************************************/
     // Infinite mouse AKA don't limit mouse at ends of screen. This needs improvement.
 
-    #if defined( TARGET_OSX )
+    /*
+	#if defined( TARGET_OSX )
     //cout << -1 * ofGetWindowPositionX() << " : " << ofGetMouseX() << " : " << (ofGetScreenWidth() - ofGetWindowPositionX()) << endl;
     if (usemouse && !keepTurning && ofGetMouseX() >= (ofGetScreenWidth() - ofGetWindowPositionX())-5 && ofGetElapsedTimeMillis()>2000) {
         //cout << "!!!!!!!!" << endl;
@@ -280,7 +281,7 @@ void ofxFPSCamera::update(ofEventArgs& args){
     #if defined( TARGET_LINUX )
         //Not sure how to do this here. Any ideas?
     #endif
-    
+    */
     // End Infinite Mouse
     /***********************************************************/
 
