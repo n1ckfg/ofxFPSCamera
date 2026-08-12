@@ -7,7 +7,7 @@
 The main objective of `ofxFPSCamera` is to create a camera that always maintains a level horizon and allows free exploration of a 3D scene, similar to what you would experience in an FPS game. This is a fork and evolution of `ofxGameCamera`, modified to meet specific requirements:
 
 - **Level Horizon:** It always maintains an UP direction relative to world coordinates. It completely removes the ability to roll on the Z-axis.
-- **Fixed Height:** Boom up/down (translating along the local Y-axis) is disabled. The camera maintains a specific height, which can be programmatically controlled but not freely driven by the user using keys.
+- **Constrained Height:** By default, boom up/down (translating along the local Y-axis) is disabled, maintaining a specific height over the ground plane. This behavior can be bypassed by enabling `flyMode`, which allows the camera to fly freely in the direction it is pointing.
 - **Constrained Pitch:** Looking up and down is limited by customizable thresholds (defaulting to +/- 30 degrees) to prevent camera flipping and disorientation.
 - **Mouse Control Defaults:** Mouse look is enabled by default and features an "infinite mouse" implementation on supported platforms, allowing continuous rotation without the mouse cursor hitting screen edges.
 
@@ -75,6 +75,7 @@ Relies on `ofxXmlSettings` to persist camera positioning.
 
 ### State & Constraint Variables
 * `float camHeight` - The current forced height of the camera.
+* `bool flyMode` - Toggles whether forward/backward movement follows the camera's look direction instead of being constrained to the ground plane.
 * `float totUpDown` - The total pitch applied.
 * `float upAngle` - Maximum angle for looking up.
 * `float downAngle` - Maximum angle for looking down.
