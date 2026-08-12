@@ -12,6 +12,28 @@
 
 #include "ofxFPSCamera.h"
 
+// The infinite mouse is handled by GLFW, which every desktop openFrameworks window
+// is built on. GLFW ships with oF (libs/glfw) on macOS and Windows and comes from
+// pkg-config on Linux, so the header is on the include path of a normal oF project.
+#if defined(TARGET_GLFW_WINDOW) && defined(__has_include)
+    #if __has_include(<GLFW/glfw3.h>)
+        #include <GLFW/glfw3.h>
+        #define OFX_FPSCAMERA_HAS_GLFW 1
+    #endif
+#endif
+
+#ifdef OFX_FPSCAMERA_HAS_GLFW
+namespace {
+    // oF hands back the underlying GLFWwindow* through the generic window context
+    // pointer. Returns null for windows that aren't GLFW-backed (ofAppEGLWindow on
+    // the Raspberry Pi, ofAppNoWindow), which is the "unsupported" case.
+    GLFWwindow * getGLFWWindowPtr(){
+        ofAppBaseWindow * window = ofGetWindowPtr();
+        return window == nullptr ? nullptr : static_cast<GLFWwindow *>(window->getWindowContext());
+    }
+}
+#endif
+
 
 ofxFPSCamera::ofxFPSCamera() {
 	unsavedChanges = false;
@@ -54,12 +76,21 @@ ofxFPSCamera::ofxFPSCamera() {
     
     clipPos = ofVec3f(0,0,0);
     isClipped = false;
+
+    infiniteMouse = true;
+    rawMouseMotion = false;
+    infiniteMouseActive = false;
 }
 ofxFPSCamera::~ofxFPSCamera(){
+    if(infiniteMouseActive){                                                // never leave the app with a captured, invisible cursor
+        setCursorCaptured(false);
+        infiniteMouseActive = false;
+    }
+
     if(eventsRegistered){
-        ofAddListener(ofEvents().update, this, &ofxFPSCamera::update);
-        ofAddListener(ofEvents().keyPressed, this, &ofxFPSCamera::keyPressed);
-        ofAddListener(ofEvents().keyReleased , this, &ofxFPSCamera::keyReleased);
+        ofRemoveListener(ofEvents().update, this, &ofxFPSCamera::update);
+        ofRemoveListener(ofEvents().keyPressed, this, &ofxFPSCamera::keyPressed);
+        ofRemoveListener(ofEvents().keyReleased , this, &ofxFPSCamera::keyReleased);
         eventsRegistered = false;
     }
 }
@@ -79,8 +110,11 @@ void ofxFPSCamera::setup(){
         reset();
     }
     /***********************************************************/
-    
-    
+
+    if(infiniteMouse && !isInfiniteMouseSupported()){
+        ofLogWarning("ofxFPSCamera") << "infinite mouse needs a GLFW-backed window; "
+                                     << "the mouse will stop at the edge of the screen";
+    }
 }
 
 void ofxFPSCamera::update(ofEventArgs& args){
@@ -226,66 +260,18 @@ void ofxFPSCamera::update(ofEventArgs& args){
 	lastPos = getPosition();
     
     /***********************************************************/
-    // Infinite mouse AKA don't limit mouse at ends of screen. This needs improvement.
-
-    /*
-	#if defined( TARGET_OSX )
-    //cout << -1 * ofGetWindowPositionX() << " : " << ofGetMouseX() << " : " << (ofGetScreenWidth() - ofGetWindowPositionX()) << endl;
-    if (usemouse && !keepTurning && ofGetMouseX() >= (ofGetScreenWidth() - ofGetWindowPositionX())-5 && ofGetElapsedTimeMillis()>2000) {
-        //cout << "!!!!!!!!" << endl;
-        CGPoint point;
-        point.y = ofGetWindowPositionY() + ofGetMouseY();
-        point.x = ofGetWindowPositionX() + ofGetWidth()/2;
-        CGWarpMouseCursorPosition(point);
-        CGAssociateMouseAndMouseCursorPosition(true);
-        lastMouse.x = ofGetMouseX();
-        mouse.x = ofGetMouseX();
-        mouse.y = ofGetMouseY();
-        justResetAngles = true;
-    }
-    if (usemouse && !keepTurning && ofGetMouseX() <= -1 * (ofGetWindowPositionX()-5) && ofGetElapsedTimeMillis()>2000) {
-        //cout << ofGetMouseY() << endl;
-        CGPoint point;
-        point.y = ofGetWindowPositionY() + ofGetMouseY();
-        point.x = ofGetWindowPositionX() + ofGetWidth()/2;
-        CGWarpMouseCursorPosition(point);
-        CGAssociateMouseAndMouseCursorPosition(true);
-        lastMouse.x = ofGetMouseX();
-        mouse.x = ofGetMouseX();
-        mouse.y = ofGetMouseY();
-        justResetAngles = true;
-    }
-    #endif
-    
-    #if defined( TARGET_WIN32 )
-    // I haven't tested the code below on Windows yet.
-    // CGWarpMouseCursorPosition(point) will not work, but I am told that SetCursorPos(x, y) should work instead...
-    
-//    if (usemouse && !keepTurning && ofGetMouseX() >= (ofGetScreenWidth() - ofGetWindowPositionX())-5 && ofGetElapsedTimeMillis()>2000) {
-//        SetCursorPos((ofGetWindowPositionX() + ofGetWidth()/2), (ofGetWindowPositionY() + ofGetMouseY()));
-//        lastMouse.x = ofGetMouseX();
-//        mouse.x = ofGetMouseX();
-//        mouse.y = ofGetMouseY();
-//        justResetAngles = true;
-//    }
-//    if (usemouse && !keepTurning && ofGetMouseX() <= -1 * (ofGetWindowPositionX()-5) && ofGetElapsedTimeMillis()>2000) {
-//        SetCursorPos((ofGetWindowPositionX() + ofGetWidth()/2), (ofGetWindowPositionY() + ofGetMouseY()));
-//        lastMouse.x = ofGetMouseX();
-//        mouse.x = ofGetMouseX();
-//        mouse.y = ofGetMouseY();
-//        justResetAngles = true;
-//    }
-    
-    #endif
-    
-    #if defined( TARGET_LINUX )
-        //Not sure how to do this here. Any ideas?
-    #endif
-    */
+    // Infinite mouse AKA don't limit mouse at ends of screen.
+    //
+    // The old per-OS code warped the cursor back to the middle of the window every
+    // time it reached a screen edge (CGWarpMouseCursorPosition on macOS, SetCursorPos
+    // on Windows, nothing at all on Linux). GLFW does the same job natively on all
+    // three platforms, so there is now one code path instead of three. See
+    // updateInfiniteMouse() below.
+    updateInfiniteMouse();
     // End Infinite Mouse
     /***********************************************************/
 
-    
+
 	//did we make a change?
 	unsavedChanges |= positionChanged || rotationChanged;
 	
@@ -345,6 +331,95 @@ void ofxFPSCamera::keyReleased(ofKeyEventArgs& args){
         }
     }
 }
+
+/***********************************************************/
+// Infinite mouse
+//
+// GLFW_CURSOR_DISABLED hides the cursor, locks it to the window and then reports a
+// *virtual* cursor position that is never clamped to the screen. The look deltas in
+// update() therefore keep arriving no matter how far the user turns, which is exactly
+// what the old warp-the-cursor-back-to-centre code was faking. GLFW implements the
+// mode natively on macOS (Quartz), Windows (raw input + clipped cursor) and Linux
+// (XInput2 pointer grab / Wayland pointer constraints), so no #ifdef per OS.
+//
+// Because we only ever use (mouse - lastMouse), the unbounded coordinates are fine;
+// nothing here depends on the cursor staying inside the window.
+
+void ofxFPSCamera::enableInfiniteMouse(){
+    infiniteMouse = true;
+}
+
+void ofxFPSCamera::disableInfiniteMouse(){
+    infiniteMouse = false;
+}
+
+bool ofxFPSCamera::isInfiniteMouseActive() const {
+    return infiniteMouseActive;
+}
+
+bool ofxFPSCamera::isInfiniteMouseSupported() const {
+#ifdef OFX_FPSCAMERA_HAS_GLFW
+    return getGLFWWindowPtr() != nullptr;
+#else
+    return false;
+#endif
+}
+
+void ofxFPSCamera::setCursorCaptured(bool captured){
+#ifdef OFX_FPSCAMERA_HAS_GLFW
+    GLFWwindow * window = getGLFWWindowPtr();
+    if(window == nullptr){
+        return;
+    }
+
+    glfwSetInputMode(window, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+    #ifdef GLFW_RAW_MOUSE_MOTION                                            // GLFW 3.3+
+    if(glfwRawMouseMotionSupported()){
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION,
+                         (captured && rawMouseMotion) ? GLFW_TRUE : GLFW_FALSE);
+    }
+    #endif
+#endif
+}
+
+void ofxFPSCamera::updateInfiniteMouse(){
+#ifdef OFX_FPSCAMERA_HAS_GLFW
+    GLFWwindow * window = getGLFWWindowPtr();
+    if(window == nullptr){
+        infiniteMouseActive = false;
+        return;
+    }
+
+    // keepTurning needs a real screen edge to push against, so the two are exclusive -
+    // same as the original code, which only warped when keepTurning was false.
+    // Letting go of the cursor when the window loses focus keeps cmd-tab/alt-tab working.
+    bool wantCapture = infiniteMouse
+                       && usemouse
+                       && !keepTurning
+                       && glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+
+    // Read the live mode rather than trusting a cached flag: ofHideCursor()/ofShowCursor()
+    // drive GLFW_CURSOR too, so the sketch can change it behind our back.
+    infiniteMouseActive = glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+
+    if(wantCapture == infiniteMouseActive){
+        return;
+    }
+
+    setCursorCaptured(wantCapture);
+    infiniteMouseActive = wantCapture;
+
+    // Entering and leaving the mode both move the reported cursor position, so drop a
+    // single frame of delta instead of letting the view snap.
+    lastMouse = ofVec2f(ofGetMouseX(), ofGetMouseY());
+    justResetAngles = true;
+#else
+    infiniteMouseActive = false;
+#endif
+}
+/***********************************************************/
+
 
 void ofxFPSCamera::clip(ofVec3f newPos){
     clipPos = newPos;

@@ -70,7 +70,15 @@ class ofxFPSCamera : public ofCamera {
     float accel;
     float speedMod;
     bool easeIn;
-    
+
+    // Infinite mouse: look without ever running into the edge of the screen.
+    void enableInfiniteMouse();
+    void disableInfiniteMouse();
+    bool infiniteMouse;                 // on by default; ignored while keepTurning is true
+    bool rawMouseMotion;                // skip the OS pointer acceleration curve, where supported
+    bool isInfiniteMouseActive() const; // true only while the cursor is actually captured
+    bool isInfiniteMouseSupported() const;
+
     void clip(ofVec3f newPos);
     bool isClipped;
     ofVec3f clipPos;
@@ -88,6 +96,10 @@ protected:
 	ofVec3f lastPos;
 
 	void updateRotation();
+
+    void updateInfiniteMouse();
+    void setCursorCaptured(bool captured);
+    bool infiniteMouseActive;
 
 	ofVec2f lastMouse;
 	bool justResetAngles;
