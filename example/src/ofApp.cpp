@@ -129,6 +129,7 @@ void ofApp::keyPressed(int key){
     switch (key) {
         case ' ':
             camera.setPosition(0, 0, 0);
+            camera.setCamHeight(0.0);
             camera.target(ofVec3f(1,0,0));
             break;
             
